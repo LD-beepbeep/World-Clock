@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Clock</title>
+    <title>World Clock & Time Tools</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -23,6 +23,7 @@
             padding: 30px;
             overflow-x: hidden;
             transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
         }
 
         .controls {
@@ -42,12 +43,12 @@
             animation: slideIn 0.5s ease-out;
         }
 
-        .search-container {
+        .search-container, .feature-container {
             position: relative;
             width: 280px;
         }
 
-        #timezoneSearch {
+        #timezoneSearch, #featureSelect {
             padding: 12px 18px;
             border: none;
             border-radius: 12px;
@@ -59,13 +60,13 @@
             font-size: 1rem;
         }
 
-        #timezoneSearch:focus {
+        #timezoneSearch:focus, #featureSelect:focus {
             outline: none;
             background: linear-gradient(145deg, #ffffff33, #ffffff1a);
             box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
         }
 
-        #timezoneSuggestions {
+        #timezoneSuggestions, #featureOptions {
             position: absolute;
             top: 100%;
             left: 0;
@@ -80,7 +81,7 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .suggestion {
+        .suggestion, .feature-option {
             padding: 12px 18px;
             cursor: pointer;
             transition: background 0.2s ease;
@@ -88,7 +89,7 @@
             font-size: 0.95rem;
         }
 
-        .suggestion:hover {
+        .suggestion:hover, .feature-option:hover {
             background: #2c5282;
         }
 
@@ -146,6 +147,7 @@
             width: 100%;
             max-width: 1600px;
             padding-bottom: 50px;
+            opacity: 1;
         }
 
         .clock {
@@ -274,7 +276,7 @@
             opacity: 1;
         }
 
-        .single-clock-fullscreen {
+        .single-clock-fullscreen, .feature-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -286,23 +288,23 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            animation: fadeIn 0.5s ease-out;
+            opacity: 1;
         }
 
-        .single-clock-fullscreen .time {
+        .single-clock-fullscreen .time, .feature-modal .time {
             font-size: 8rem;
             margin-bottom: 20px;
         }
 
-        .single-clock-fullscreen h2 {
+        .single-clock-fullscreen h2, .feature-modal h2 {
             font-size: 2.5rem;
         }
 
-        .single-clock-fullscreen .date {
+        .single-clock-fullscreen .date, .feature-modal .date {
             font-size: 1.5rem;
         }
 
-        .single-clock-fullscreen .exit-fullscreen {
+        .single-clock-fullscreen .exit-fullscreen, .feature-modal .exit-fullscreen {
             position: absolute;
             top: 20px;
             right: 20px;
@@ -339,6 +341,70 @@
             display: none;
         }
 
+        .feature-modal .controls {
+            position: static;
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .feature-modal input {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(145deg, #ffffff1a, #ffffff0d);
+            color: #e0e7ff;
+            width: 80px;
+            text-align: center;
+        }
+
+        .progress-ring {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke: #6366f1;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+
+        .progress-ring circle.background {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .alarm-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            color: #e0e7ff;
+        }
+
+        .alarm-item button {
+            background: none;
+            border: none;
+            color: #f87171;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
         @keyframes slideIn {
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -348,11 +414,6 @@
             0% { transform: scale(0.8); opacity: 0; }
             60% { transform: scale(1.05); opacity: 1; }
             100% { transform: scale(1); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         @media (max-width: 768px) {
@@ -368,7 +429,7 @@
                 font-size: 1.2rem;
             }
 
-            .single-clock-fullscreen .time {
+            .single-clock-fullscreen .time, .feature-modal .time {
                 font-size: 5rem;
             }
 
@@ -383,7 +444,7 @@
                 align-items: stretch;
             }
 
-            .search-container {
+            .search-container, .feature-container {
                 width: 100%;
             }
 
@@ -395,7 +456,7 @@
                 grid-template-columns: 1fr;
             }
 
-            .single-clock-fullscreen .time {
+            .single-clock-fullscreen .time, .feature-modal .time {
                 font-size: 3.5rem;
             }
 
@@ -411,6 +472,14 @@
             <input type="text" id="timezoneSearch" placeholder="Search timezone..." autocomplete="off">
             <div id="timezoneSuggestions"></div>
         </div>
+        <div class="feature-container">
+            <input type="text" id="featureSelect" placeholder="Select feature..." readonly>
+            <div id="featureOptions">
+                <div class="feature-option" data-feature="pomodoro">Pomodoro Timer</div>
+                <div class="feature-option" data-feature="timer">Countdown Timer</div>
+                <div class="feature-option" data-feature="alarm">Alarm</div>
+            </div>
+        </div>
         <button id="minimalModeBtn" class="hidden" onclick="toggleMinimalMode()">Minimal Mode</button>
         <div class="color-palette">
             <div class="color-swatch" style="background: #0a1128" onclick="changeBackground('#0a1128')"></div>
@@ -422,16 +491,30 @@
         <button onclick="clearClocks()">Clear All</button>
     </div>
     <div class="clock-grid" id="clockGrid"></div>
+    <div id="featureModal" class="feature-modal hidden"></div>
 
     <script>
+        window.onload = () => {
+            document.body.style.opacity = '1';
+            document.getElementById('clockGrid').style.opacity = '1';
+            updateClockDisplay();
+        };
+
         const timezones = Intl.supportedValuesOf('timeZone');
         const timezoneSearch = document.getElementById('timezoneSearch');
         const timezoneSuggestions = document.getElementById('timezoneSuggestions');
+        const featureSelect = document.getElementById('featureSelect');
+        const featureOptions = document.getElementById('featureOptions');
         const clockGrid = document.getElementById('clockGrid');
         const minimalModeBtn = document.getElementById('minimalModeBtn');
+        const featureModal = document.getElementById('featureModal');
         let clocks = JSON.parse(localStorage.getItem('clocks')) || [];
         let minimalMode = false;
         let singleFullscreenTz = null;
+        let pomodoroInterval, timerInterval, alarmInterval;
+        let pomodoroTime = 25 * 60;
+        let timerTime = 0;
+        let alarms = [];
 
         // Handle timezone search
         timezoneSearch.addEventListener('input', () => {
@@ -458,10 +541,27 @@
             timezoneSuggestions.style.display = filtered.length ? 'block' : 'none';
         });
 
-        // Hide suggestions on click outside
+        // Handle feature dropdown
+        featureSelect.addEventListener('click', () => {
+            featureOptions.style.display = featureOptions.style.display === 'block' ? 'none' : 'block';
+        });
+
+        featureOptions.querySelectorAll('.feature-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const feature = option.dataset.feature;
+                featureSelect.value = option.textContent;
+                featureOptions.style.display = 'none';
+                openFeature(feature);
+            });
+        });
+
+        // Hide suggestions/options on click outside
         document.addEventListener('click', (e) => {
             if (!timezoneSearch.contains(e.target) && !timezoneSuggestions.contains(e.target)) {
                 timezoneSuggestions.style.display = 'none';
+            }
+            if (!featureSelect.contains(e.target) && !featureOptions.contains(e.target)) {
+                featureOptions.style.display = 'none';
             }
         });
 
@@ -494,6 +594,7 @@
         // Update clock display
         function updateClockDisplay() {
             clockGrid.innerHTML = '';
+            clockGrid.style.opacity = '1';
             minimalModeBtn.classList.toggle('hidden', !singleFullscreenTz);
 
             if (singleFullscreenTz) {
@@ -582,6 +683,7 @@
         // Update all clocks every second
         setInterval(() => {
             clocks.forEach(tz => updateClock(tz));
+            checkAlarms();
         }, 1000);
 
         // Show single clock in fullscreen
@@ -613,6 +715,228 @@
             swatches.forEach(s => s.classList.remove('active'));
             const activeSwatch = Array.from(swatches).find(s => s.style.background === color);
             if (activeSwatch) activeSwatch.classList.add('active');
+        }
+
+        // Open feature modal
+        function openFeature(feature) {
+            featureModal.classList.remove('hidden');
+            document.documentElement.requestFullscreen();
+            if (feature === 'pomodoro') {
+                openPomodoro();
+            } else if (feature === 'timer') {
+                openTimer();
+            } else if (feature === 'alarm') {
+                openAlarm();
+            }
+        }
+
+        // Close feature modal
+        function closeFeature() {
+            featureModal.classList.add('hidden');
+            featureModal.innerHTML = '';
+            document.exitFullscreen();
+            clearInterval(pomodoroInterval);
+            clearInterval(timerInterval);
+            featureSelect.value = '';
+        }
+
+        // Pomodoro Timer
+        function openPomodoro() {
+            pomodoroTime = 25 * 60;
+            featureModal.innerHTML = `
+                <button class="exit-fullscreen" onclick="closeFeature()">×</button>
+                <h2>Pomodoro Timer</h2>
+                <svg class="progress-ring" viewBox="0 0 100 100">
+                    <circle class="background" cx="50" cy="50" r="45"></circle>
+                    <circle class="progress" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                </svg>
+                <div class="time">${formatTime(pomodoroTime)}</div>
+                <div class="controls">
+                    <button id="pomodoroStartBtn" onclick="startPomodoro()">Start</button>
+                    <button onclick="resetPomodoro()">Reset</button>
+                </div>
+            `;
+            updatePomodoroProgress();
+        }
+
+        function startPomodoro() {
+            const button = document.getElementById('pomodoroStartBtn');
+            if (pomodoroInterval) {
+                clearInterval(pomodoroInterval);
+                pomodoroInterval = null;
+                button.textContent = 'Start';
+            } else {
+                pomodoroInterval = setInterval(() => {
+                    pomodoroTime--;
+                    updatePomodoroProgress();
+                    if (pomodoroTime <= 0) {
+                        clearInterval(pomodoroInterval);
+                        alert('Pomodoro session complete! Take a 5-minute break.');
+                        resetPomodoro();
+                    }
+                }, 1000);
+                button.textContent = 'Pause';
+            }
+        }
+
+        function resetPomodoro() {
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = null;
+            document.getElementById('pomodoroStartBtn').textContent = 'Start';
+            pomodoroTime = 25 * 60;
+            updatePomodoroProgress();
+        }
+
+        function updatePomodoroProgress() {
+            const timeDisplay = featureModal.querySelector('.time');
+            const progress = featureModal.querySelector('.progress');
+            timeDisplay.textContent = formatTime(pomodoroTime);
+            const offset = 283 * (1 - pomodoroTime / (25 * 60));
+            progress.style.strokeDashoffset = offset;
+        }
+
+        // Countdown Timer
+        function openTimer() {
+            timerTime = 0;
+            featureModal.innerHTML = `
+                <button class="exit-fullscreen" onclick="closeFeature()">×</button>
+                <h2>Countdown Timer</h2>
+                <div class="controls">
+                    <input type="number" id="timerHours" placeholder="HH" min="0" max="23">
+                    <input type="number" id="timerMinutes" placeholder="MM" min="0" max="59">
+                    <input type="number" id="timerSeconds" placeholder="SS" min="0" max="59">
+                </div>
+                <svg class="progress-ring" viewBox="0 0 100 100">
+                    <circle class="background" cx="50" cy="50" r="45"></circle>
+                    <circle class="progress" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                </svg>
+                <div class="time">00:00:00</div>
+                <div class="controls">
+                    <button id="timerStartBtn" onclick="startTimer()">Start</button>
+                    <button onclick="resetTimer()">Reset</button>
+                </div>
+            `;
+        }
+
+        function startTimer() {
+            const button = document.getElementById('timerStartBtn');
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                button.textContent = 'Start';
+            } else {
+                const hours = parseInt(document.getElementById('timerHours').value) || 0;
+                const minutes = parseInt(document.getElementById('timerMinutes').value) || 0;
+                const seconds = parseInt(document.getElementById('timerSeconds').value) || 0;
+                timerTime = hours * 3600 + minutes * 60 + seconds;
+                if (timerTime <= 0) return;
+
+                timerInterval = setInterval(() => {
+                    timerTime--;
+                    updateTimerProgress();
+                    if (timerTime <= 0) {
+                        clearInterval(timerInterval);
+                        alert('Timer finished!');
+                        resetTimer();
+                    }
+                }, 1000);
+                button.textContent = 'Pause';
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('timerStartBtn').textContent = 'Start';
+            timerTime = 0;
+            const timeDisplay = featureModal.querySelector('.time');
+            const progress = featureModal.querySelector('.progress');
+            timeDisplay.textContent = '00:00:00';
+            progress.style.strokeDashoffset = 283;
+            document.getElementById('timerHours').value = '';
+            document.getElementById('timerMinutes').value = '';
+            document.getElementById('timerSeconds').value = '';
+        }
+
+        function updateTimerProgress() {
+            const timeDisplay = featureModal.querySelector('.time');
+            const progress = featureModal.querySelector('.progress');
+            timeDisplay.textContent = formatTime(timerTime);
+            const initialTime = parseInt(document.getElementById('timerHours').value || 0) * 3600 +
+                               parseInt(document.getElementById('timerMinutes').value || 0) * 60 +
+                               parseInt(document.getElementById('timerSeconds').value || 0);
+            const offset = initialTime > 0 ? 283 * (1 - timerTime / initialTime) : 283;
+            progress.style.strokeDashoffset = offset;
+        }
+
+        // Alarm
+        function openAlarm() {
+            featureModal.innerHTML = `
+                <button class="exit-fullscreen" onclick="closeFeature()">×</button>
+                <h2>Alarm</h2>
+                <div class="controls">
+                    <input type="number" id="alarmHour" placeholder="HH" min="0" max="23">
+                    <input type="number" id="alarmMinute" placeholder="MM" min="0" max="59">
+                    <button onclick="setAlarm()">Set Alarm</button>
+                </div>
+                <div class="alarm-list" id="alarmList"></div>
+            `;
+            updateAlarmList();
+        }
+
+        function setAlarm() {
+            const hour = parseInt(document.getElementById('alarmHour').value) || 0;
+            const minute = parseInt(document.getElementById('alarmMinute').value) || 0;
+            const now = new Date();
+            let alarmTime = new Date();
+            alarmTime.setHours(hour, minute, 0, 0);
+            if (alarmTime <= now) alarmTime.setDate(alarmTime.getDate() + 1);
+            alarms.push(alarmTime.getTime());
+            updateAlarmList();
+            document.getElementById('alarmHour').value = '';
+            document.getElementById('alarmMinute').value = '';
+        }
+
+        function updateAlarmList() {
+            const alarmList = document.getElementById('alarmList');
+            if (!alarmList) return;
+            alarmList.innerHTML = '';
+            alarms.forEach((time, index) => {
+                const alarm = new Date(time);
+                const timeStr = alarm.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                const div = document.createElement('div');
+                div.className = 'alarm-item';
+                div.innerHTML = `
+                    <span>${timeStr}</span>
+                    <button onclick="deleteAlarm(${index})">Delete</button>
+                `;
+                alarmList.appendChild(div);
+            });
+        }
+
+        function deleteAlarm(index) {
+            alarms.splice(index, 1);
+            updateAlarmList();
+        }
+
+        function checkAlarms() {
+            const now = new Date().getTime();
+            alarms = alarms.filter(time => {
+                if (now >= time && now <= time + 1000) {
+                    alert('Alarm!');
+                    return false;
+                }
+                return true;
+            });
+            updateAlarmList();
+        }
+
+        // Format time
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
         // Load saved clocks or add defaults
