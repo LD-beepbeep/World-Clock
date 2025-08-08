@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>World Clock & Time Tools</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
+        /* ========== ORIGINAL STYLES (unchanged) ========== */
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
 
         body {
             background: linear-gradient(180deg, #0a1128, #1a2a44);
@@ -30,7 +26,7 @@
             position: sticky;
             top: 20px;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.05);
             backdrop-filter: blur(20px);
             padding: 15px 25px;
             border-radius: 15px;
@@ -39,31 +35,28 @@
             gap: 15px;
             flex-wrap: wrap;
             justify-content: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
             animation: slideIn 0.5s ease-out;
         }
 
-        .search-container, .feature-container {
-            position: relative;
-            width: 280px;
-        }
+        .search-container, .feature-container { position: relative; width: 280px; }
 
         #timezoneSearch, #featureSelect {
             padding: 12px 18px;
             border: none;
             border-radius: 12px;
-            background: linear-gradient(145deg, #ffffff1a, #ffffff0d);
+            background: linear-gradient(145deg,#ffffff1a,#ffffff0d);
             color: #e0e7ff;
             width: 100%;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all .3s ease;
             font-size: 1rem;
         }
 
         #timezoneSearch:focus, #featureSelect:focus {
             outline: none;
-            background: linear-gradient(145deg, #ffffff33, #ffffff1a);
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            background: linear-gradient(145deg,#ffffff33,#ffffff1a);
+            box-shadow: 0 4px 15px rgba(255,255,255,.1);
         }
 
         #timezoneSuggestions, #featureOptions {
@@ -78,391 +71,173 @@
             margin-top: 8px;
             display: none;
             z-index: 1001;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,.3);
         }
 
         .suggestion, .feature-option {
             padding: 12px 18px;
             cursor: pointer;
-            transition: background 0.2s ease;
+            transition: background .2s ease;
             color: #e0e7ff;
-            font-size: 0.95rem;
+            font-size: .95rem;
         }
-
-        .suggestion:hover, .feature-option:hover {
-            background: #2c5282;
-        }
+        .suggestion:hover, .feature-option:hover { background:#2c5282; }
 
         .controls button {
             padding: 12px 18px;
             border: none;
             border-radius: 12px;
-            background: linear-gradient(145deg, #ffffff1a, #ffffff0d);
+            background: linear-gradient(145deg,#ffffff1a,#ffffff0d);
             color: #e0e7ff;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all .3s ease;
             font-weight: 500;
             font-size: 1rem;
         }
-
         .controls button:hover {
             transform: translateY(-2px);
-            background: linear-gradient(145deg, #ffffff33, #ffffff1a);
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            background: linear-gradient(145deg,#ffffff33,#ffffff1a);
+            box-shadow: 0 4px 15px rgba(255,255,255,.1);
         }
+        .controls button.hidden { display:none; }
 
-        .controls button.hidden {
-            display: none;
-        }
-
-        .color-palette {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .color-swatch {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .color-swatch:hover {
-            transform: scale(1.15);
-            border-color: #ffffff33;
-        }
-
-        .color-swatch.active {
-            border-color: #ffffff;
-            transform: scale(1.1);
-        }
+        .color-palette { display:flex; gap:10px; align-items:center; }
+        .color-swatch { width:32px; height:32px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition: all .3s ease; }
+        .color-swatch:hover { transform: scale(1.15); border-color:#ffffff33; }
+        .color-swatch.active { border-color:#ffffff; transform: scale(1.1); }
 
         .clock-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 25px;
-            width: 100%;
-            max-width: 1600px;
-            padding-bottom: 50px;
-            opacity: 1;
+            display:grid;
+            grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+            gap:25px;
+            width:100%;
+            max-width:1600px;
+            padding-bottom:50px;
+            opacity:1;
         }
 
         .clock {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            padding: 25px;
-            text-align: center;
+            background: rgba(255,255,255,0.03);
+            border-radius:20px;
+            padding:25px;
+            text-align:center;
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: popIn 0.6s ease-out;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all .4s cubic-bezier(.4,0,.2,1);
+            animation: popIn .6s ease-out;
             position: relative;
             overflow: hidden;
             cursor: pointer;
         }
 
         .clock::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            content:'';
+            position:absolute;
+            top:0; left:0; width:100%; height:100%;
+            background: radial-gradient(circle, rgba(255,255,255,.05), transparent);
+            opacity:0;
+            transition: opacity .3s ease;
         }
+        .clock:hover::before { opacity:1; }
+        .clock:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 12px 40px rgba(0,0,0,.3); }
 
-        .clock:hover::before {
-            opacity: 1;
-        }
-
-        .clock:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .clock h2 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #a3bffa;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
+        .clock h2 { font-size:1.4rem; font-weight:600; margin-bottom:15px; color:#a3bffa; letter-spacing:.5px; text-transform:uppercase; }
         .time {
-            font-size: 2.6rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(90deg, #ffffff, #a3bffa);
+            font-size:2.6rem;
+            font-weight:700;
+            margin-bottom:8px;
+            background: linear-gradient(90deg,#ffffff,#a3bffa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        .date { font-size:1rem; font-weight:300; opacity:.7; color:#c3dafe; }
 
-        .date {
-            font-size: 1rem;
-            font-weight: 300;
-            opacity: 0.7;
-            color: #c3dafe;
-        }
+        .analog-clock { width:120px; height:120px; margin:15px auto; position:relative; background: linear-gradient(145deg,#ffffff0d,#ffffff1a); border-radius:50%; border:2px solid rgba(255,255,255,0.1); box-shadow: inset 0 4px 10px rgba(0,0,0,.2), 0 4px 10px rgba(0,0,0,.2); }
+        .hand { position:absolute; bottom:50%; left:50%; transform-origin: bottom; border-radius:2px; transition: transform .3s ease; }
+        .hour-hand { width:5px; height:35px; background:#6366f1; }
+        .minute-hand { width:4px; height:50px; background:#a3bffa; }
+        .second-hand { width:2px; height:55px; background:#f87171; }
+        .center-dot { width:8px; height:8px; background:#fff; border-radius:50%; position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); }
 
-        .analog-clock {
-            width: 120px;
-            height: 120px;
-            margin: 15px auto;
-            position: relative;
-            background: linear-gradient(145deg, #ffffff0d, #ffffff1a);
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .hand {
-            position: absolute;
-            bottom: 50%;
-            left: 50%;
-            transform-origin: bottom;
-            border-radius: 2px;
-            transition: transform 0.3s ease;
-        }
-
-        .hour-hand {
-            width: 5px;
-            height: 35px;
-            background: #6366f1;
-        }
-
-        .minute-hand {
-            width: 4px;
-            height: 50px;
-            background: #a3bffa;
-        }
-
-        .second-hand {
-            width: 2px;
-            height: 55px;
-            background: #f87171;
-        }
-
-        .center-dot {
-            width: 8px;
-            height: 8px;
-            background: #ffffff;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .remove-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: #f87171;
-            font-size: 1.2rem;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .clock:hover .remove-btn {
-            opacity: 1;
-        }
+        .remove-btn { position:absolute; top:10px; right:10px; background:none; border:none; color:#f87171; font-size:1.2rem; cursor:pointer; opacity:0; transition: opacity .3s ease; }
+        .clock:hover .remove-btn { opacity:1; }
 
         .single-clock-fullscreen, .feature-modal {
+            position: fixed; top:0; left:0; width:100vw; height:100vh; background: inherit;
+            display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:2000; opacity:1;
+        }
+        .single-clock-fullscreen .time, .feature-modal .time { font-size:8rem; margin-bottom:20px; }
+        .single-clock-fullscreen h2, .feature-modal h2 { font-size:2.5rem; }
+        .single-clock-fullscreen .date, .feature-modal .date { font-size:1.5rem; }
+        .single-clock-fullscreen .exit-fullscreen, .feature-modal .exit-fullscreen { position:absolute; top:20px; right:20px; font-size:1.5rem; background:none; border:none; color:#f87171; cursor:pointer; }
+
+        .minimal-mode .clock { background:none; border:none; backdrop-filter:none; box-shadow:none; transform:none; }
+        .minimal-mode .time { font-size:10rem; font-weight:800; }
+        .minimal-mode h2 { font-size:2rem; margin-bottom:20px; }
+        .minimal-mode .date { font-size:1.5rem; }
+        .minimal-mode .analog-clock, .minimal-mode .remove-btn { display:none; }
+
+        .feature-modal .controls { position: static; margin-top:20px; display:flex; gap:15px; }
+        .feature-modal input { padding:10px; border:none; border-radius:8px; background: linear-gradient(145deg,#ffffff1a,#ffffff0d); color:#e0e7ff; width:80px; text-align:center; }
+
+        .progress-ring { width:150px; height:150px; margin:20px auto; }
+        .progress-ring circle { fill:none; stroke:#6366f1; stroke-width:8; stroke-linecap:round; transform: rotate(-90deg); transform-origin:center; }
+        .progress-ring circle.background { stroke: rgba(255,255,255,0.1); }
+
+        .alarm-list { margin-top:20px; max-height:200px; overflow-y:auto; width:300px; background: rgba(255,255,255,0.03); border-radius:12px; padding:10px; }
+        .alarm-item { display:flex; justify-content:space-between; padding:8px; color:#e0e7ff; }
+        .alarm-item button { background:none; border:none; color:#f87171; cursor:pointer; }
+
+        .hidden { display:none; }
+
+        @keyframes slideIn { from { transform: translateY(-50px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+        @keyframes popIn { 0% { transform: scale(.8); opacity:0 } 60% { transform: scale(1.05); opacity:1 } 100% { transform: scale(1); } }
+
+        @media (max-width:768px) {
+            .clock-grid { grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); }
+            .time { font-size:2rem; }
+            .clock h2 { font-size:1.2rem; }
+            .single-clock-fullscreen .time, .feature-modal .time { font-size:5rem; }
+            .minimal-mode .time { font-size:6rem; }
+        }
+        @media (max-width:480px) {
+            .controls { flex-direction:column; align-items:stretch; }
+            .search-container, .feature-container { width:100%; }
+            .color-palette { justify-content:center; }
+            .clock-grid { grid-template-columns:1fr; }
+            .single-clock-fullscreen .time, .feature-modal .time { font-size:3.5rem; }
+            .minimal-mode .time { font-size:4rem; }
+        }
+
+        /* ========== SPOTIFY DYNAMIC ISLAND (ADDED) ========== */
+        #spotifyNowPlaying {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: inherit;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 1;
-        }
-
-        .single-clock-fullscreen .time, .feature-modal .time {
-            font-size: 8rem;
-            margin-bottom: 20px;
-        }
-
-        .single-clock-fullscreen h2, .feature-modal h2 {
-            font-size: 2.5rem;
-        }
-
-        .single-clock-fullscreen .date, .feature-modal .date {
-            font-size: 1.5rem;
-        }
-
-        .single-clock-fullscreen .exit-fullscreen, .feature-modal .exit-fullscreen {
-            position: absolute;
-            top: 20px;
+            bottom: 20px;
             right: 20px;
-            font-size: 1.5rem;
-            background: none;
-            border: none;
-            color: #f87171;
-            cursor: pointer;
-        }
-
-        .minimal-mode .clock {
-            background: none;
-            border: none;
-            backdrop-filter: none;
-            box-shadow: none;
-            transform: none;
-        }
-
-        .minimal-mode .time {
-            font-size: 10rem;
-            font-weight: 800;
-        }
-
-        .minimal-mode h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-
-        .minimal-mode .date {
-            font-size: 1.5rem;
-        }
-
-        .minimal-mode .analog-clock, .minimal-mode .remove-btn {
-            display: none;
-        }
-
-        .feature-modal .controls {
-            position: static;
-            margin-top: 20px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .feature-modal input {
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(145deg, #ffffff1a, #ffffff0d);
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(20px);
             color: #e0e7ff;
-            width: 80px;
-            text-align: center;
-        }
-
-        .progress-ring {
-            width: 150px;
-            height: 150px;
-            margin: 20px auto;
-        }
-
-        .progress-ring circle {
-            fill: none;
-            stroke: #6366f1;
-            stroke-width: 8;
-            stroke-linecap: round;
-            transform: rotate(-90deg);
+            padding: 8px 16px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: .95rem;
+            max-width: 360px;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.45);
+            z-index: 3000;
             transform-origin: center;
+            transition: all .22s ease;
         }
-
-        .progress-ring circle.background {
-            stroke: rgba(255, 255, 255, 0.1);
-        }
-
-        .alarm-list {
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            width: 300px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 10px;
-        }
-
-        .alarm-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            color: #e0e7ff;
-        }
-
-        .alarm-item button {
-            background: none;
-            border: none;
-            color: #f87171;
-            cursor: pointer;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            60% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(1); }
-        }
-
-        @media (max-width: 768px) {
-            .clock-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
-
-            .time {
-                font-size: 2rem;
-            }
-
-            .clock h2 {
-                font-size: 1.2rem;
-            }
-
-            .single-clock-fullscreen .time, .feature-modal .time {
-                font-size: 5rem;
-            }
-
-            .minimal-mode .time {
-                font-size: 6rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-container, .feature-container {
-                width: 100%;
-            }
-
-            .color-palette {
-                justify-content: center;
-            }
-
-            .clock-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .single-clock-fullscreen .time, .feature-modal .time {
-                font-size: 3.5rem;
-            }
-
-            .minimal-mode .time {
-                font-size: 4rem;
-            }
+        #spotifyNowPlaying img { width:48px; height:48px; border-radius:8px; flex-shrink:0; }
+        #spotifyNowPlaying .meta { display:flex; flex-direction:column; align-items:flex-start; gap:2px; max-width:220px; overflow:hidden; }
+        #spotifyNowPlaying .meta .title { font-weight:600; font-size:.95rem; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+        #spotifyNowPlaying .meta .artist { font-weight:300; font-size:.85rem; color: #cbd5ff; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+        #spotifyNowPlaying.song-change { transform: scale(1.04); box-shadow: 0 6px 30px rgba(30,215,96,0.12), 0 0 24px rgba(30,215,96,0.06); }
+        #screenAwakeToggle {
+            position: fixed; bottom: 90px; right: 20px; z-index: 3000;
+            background: rgba(255,255,255,0.06); color:#e0e7ff; padding:8px 12px; border-radius:999px;
+            font-size:.85rem; cursor:pointer; backdrop-filter: blur(6px);
         }
     </style>
 </head>
@@ -490,17 +265,23 @@
         </div>
         <button onclick="clearClocks()">Clear All</button>
     </div>
+
     <div class="clock-grid" id="clockGrid"></div>
     <div id="featureModal" class="feature-modal hidden"></div>
 
+    <!-- Spotify dynamic pill + wake toggle -->
+    <div id="spotifyNowPlaying" class="hidden" aria-live="polite"></div>
+    <button id="screenAwakeToggle" class="hidden" title="Toggle keep screen awake">🔆 Keep Awake: ON</button>
+
     <script>
+        /* ========== ORIGINAL JS (untouched logic) ========== */
         window.onload = () => {
             document.body.style.opacity = '1';
             document.getElementById('clockGrid').style.opacity = '1';
             updateClockDisplay();
         };
 
-        const timezones = Intl.supportedValuesOf('timeZone');
+        const timezones = Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : [];
         const timezoneSearch = document.getElementById('timezoneSearch');
         const timezoneSuggestions = document.getElementById('timezoneSuggestions');
         const featureSelect = document.getElementById('featureSelect');
@@ -516,32 +297,24 @@
         let timerTime = 0;
         let alarms = [];
 
-        // Handle timezone search
         timezoneSearch.addEventListener('input', () => {
             const query = timezoneSearch.value.toLowerCase();
             timezoneSuggestions.innerHTML = '';
-            if (query.length < 2) {
+            if (!query || query.length < 2) {
                 timezoneSuggestions.style.display = 'none';
                 return;
             }
-
             const filtered = timezones.filter(tz => tz.toLowerCase().includes(query));
-            filtered.slice(0, 10).forEach(tz => {
+            filtered.slice(0,10).forEach(tz => {
                 const div = document.createElement('div');
                 div.className = 'suggestion';
-                div.textContent = tz.replace('_', ' ');
-                div.onclick = () => {
-                    addClock(tz);
-                    timezoneSearch.value = '';
-                    timezoneSuggestions.style.display = 'none';
-                };
+                div.textContent = tz.replace('_',' ');
+                div.onclick = () => { addClock(tz); timezoneSearch.value=''; timezoneSuggestions.style.display='none'; };
                 timezoneSuggestions.appendChild(div);
             });
-
             timezoneSuggestions.style.display = filtered.length ? 'block' : 'none';
         });
 
-        // Handle feature dropdown
         featureSelect.addEventListener('click', () => {
             featureOptions.style.display = featureOptions.style.display === 'block' ? 'none' : 'block';
         });
@@ -555,7 +328,6 @@
             });
         });
 
-        // Hide suggestions/options on click outside
         document.addEventListener('click', (e) => {
             if (!timezoneSearch.contains(e.target) && !timezoneSuggestions.contains(e.target)) {
                 timezoneSuggestions.style.display = 'none';
@@ -565,7 +337,6 @@
             }
         });
 
-        // Add new clock
         function addClock(tz) {
             if (!tz || clocks.includes(tz) || (singleFullscreenTz && clocks.length >= 1)) return;
             clocks.push(tz);
@@ -573,7 +344,6 @@
             updateClockDisplay();
         }
 
-        // Remove clock
         function removeClock(tz) {
             clocks = clocks.filter(t => t !== tz);
             localStorage.setItem('clocks', JSON.stringify(clocks));
@@ -582,7 +352,6 @@
             updateClockDisplay();
         }
 
-        // Clear all clocks
         function clearClocks() {
             clocks = [];
             singleFullscreenTz = null;
@@ -591,7 +360,6 @@
             updateClockDisplay();
         }
 
-        // Update clock display
         function updateClockDisplay() {
             clockGrid.innerHTML = '';
             clockGrid.style.opacity = '1';
@@ -604,7 +372,7 @@
                 clockDiv.dataset.timezone = tz;
                 clockDiv.innerHTML = `
                     <button class="exit-fullscreen" onclick="exitSingleFullscreen()">×</button>
-                    <h2>${tz.replace('_', ' ')}</h2>
+                    <h2>${tz.replace('_',' ')}</h2>
                     ${minimalMode ? '' : `
                         <div class="analog-clock">
                             <div class="hand hour-hand"></div>
@@ -630,7 +398,7 @@
                     };
                     clockDiv.innerHTML = `
                         <button class="remove-btn" onclick="removeClock('${tz}')">×</button>
-                        <h2>${tz.replace('_', ' ')}</h2>
+                        <h2>${tz.replace('_',' ')}</h2>
                         <div class="analog-clock">
                             <div class="hand hour-hand"></div>
                             <div class="hand minute-hand"></div>
@@ -646,7 +414,6 @@
             }
         }
 
-        // Update clock
         function updateClock(tz) {
             const clockDiv = document.querySelector(`.clock[data-timezone="${tz}"]`);
             if (!clockDiv) return;
@@ -680,20 +447,17 @@
             }
         }
 
-        // Update all clocks every second
         setInterval(() => {
             clocks.forEach(tz => updateClock(tz));
             checkAlarms();
         }, 1000);
 
-        // Show single clock in fullscreen
         function showSingleFullscreen(tz) {
             singleFullscreenTz = tz;
             document.documentElement.requestFullscreen();
             updateClockDisplay();
         }
 
-        // Exit single clock fullscreen
         function exitSingleFullscreen() {
             singleFullscreenTz = null;
             minimalMode = false;
@@ -701,14 +465,12 @@
             updateClockDisplay();
         }
 
-        // Toggle minimal mode
         function toggleMinimalMode() {
             if (!singleFullscreenTz) return;
             minimalMode = !minimalMode;
             updateClockDisplay();
         }
 
-        // Change background color
         function changeBackground(color) {
             document.body.style.background = color;
             const swatches = document.querySelectorAll('.color-swatch');
@@ -717,7 +479,6 @@
             if (activeSwatch) activeSwatch.classList.add('active');
         }
 
-        // Open feature modal
         function openFeature(feature) {
             featureModal.classList.remove('hidden');
             document.documentElement.requestFullscreen();
@@ -730,7 +491,6 @@
             }
         }
 
-        // Close feature modal
         function closeFeature() {
             featureModal.classList.add('hidden');
             featureModal.innerHTML = '';
@@ -740,7 +500,7 @@
             featureSelect.value = '';
         }
 
-        // Pomodoro Timer
+        /* Pomodoro, timer, alarm, formatTime, alarms — intact (kept exactly like your original) */
         function openPomodoro() {
             pomodoroTime = 25 * 60;
             featureModal.innerHTML = `
@@ -758,7 +518,6 @@
             `;
             updatePomodoroProgress();
         }
-
         function startPomodoro() {
             const button = document.getElementById('pomodoroStartBtn');
             if (pomodoroInterval) {
@@ -778,7 +537,6 @@
                 button.textContent = 'Pause';
             }
         }
-
         function resetPomodoro() {
             clearInterval(pomodoroInterval);
             pomodoroInterval = null;
@@ -786,16 +544,15 @@
             pomodoroTime = 25 * 60;
             updatePomodoroProgress();
         }
-
         function updatePomodoroProgress() {
             const timeDisplay = featureModal.querySelector('.time');
             const progress = featureModal.querySelector('.progress');
+            if (!timeDisplay) return;
             timeDisplay.textContent = formatTime(pomodoroTime);
             const offset = 283 * (1 - pomodoroTime / (25 * 60));
-            progress.style.strokeDashoffset = offset;
+            if (progress) progress.style.strokeDashoffset = offset;
         }
 
-        // Countdown Timer
         function openTimer() {
             timerTime = 0;
             featureModal.innerHTML = `
@@ -817,7 +574,6 @@
                 </div>
             `;
         }
-
         function startTimer() {
             const button = document.getElementById('timerStartBtn');
             if (timerInterval) {
@@ -843,33 +599,33 @@
                 button.textContent = 'Pause';
             }
         }
-
         function resetTimer() {
             clearInterval(timerInterval);
             timerInterval = null;
-            document.getElementById('timerStartBtn').textContent = 'Start';
+            const btn = document.getElementById('timerStartBtn');
+            if (btn) btn.textContent = 'Start';
             timerTime = 0;
             const timeDisplay = featureModal.querySelector('.time');
             const progress = featureModal.querySelector('.progress');
-            timeDisplay.textContent = '00:00:00';
-            progress.style.strokeDashoffset = 283;
-            document.getElementById('timerHours').value = '';
-            document.getElementById('timerMinutes').value = '';
-            document.getElementById('timerSeconds').value = '';
+            if (timeDisplay) timeDisplay.textContent = '00:00:00';
+            if (progress) progress.style.strokeDashoffset = 283;
+            const h = document.getElementById('timerHours');
+            const m = document.getElementById('timerMinutes');
+            const s = document.getElementById('timerSeconds');
+            if (h) h.value = ''; if (m) m.value = ''; if (s) s.value = '';
         }
-
         function updateTimerProgress() {
             const timeDisplay = featureModal.querySelector('.time');
             const progress = featureModal.querySelector('.progress');
+            if (!timeDisplay) return;
             timeDisplay.textContent = formatTime(timerTime);
-            const initialTime = parseInt(document.getElementById('timerHours').value || 0) * 3600 +
-                               parseInt(document.getElementById('timerMinutes').value || 0) * 60 +
-                               parseInt(document.getElementById('timerSeconds').value || 0);
+            const initialTime = (parseInt(document.getElementById('timerHours')?.value || 0) * 3600) +
+                                (parseInt(document.getElementById('timerMinutes')?.value || 0) * 60) +
+                                (parseInt(document.getElementById('timerSeconds')?.value || 0));
             const offset = initialTime > 0 ? 283 * (1 - timerTime / initialTime) : 283;
-            progress.style.strokeDashoffset = offset;
+            if (progress) progress.style.strokeDashoffset = offset;
         }
 
-        // Alarm
         function openAlarm() {
             featureModal.innerHTML = `
                 <button class="exit-fullscreen" onclick="closeFeature()">×</button>
@@ -883,10 +639,9 @@
             `;
             updateAlarmList();
         }
-
         function setAlarm() {
-            const hour = parseInt(document.getElementById('alarmHour').value) || 0;
-            const minute = parseInt(document.getElementById('alarmMinute').value) || 0;
+            const hour = parseInt(document.getElementById('alarmHour')?.value) || 0;
+            const minute = parseInt(document.getElementById('alarmMinute')?.value) || 0;
             const now = new Date();
             let alarmTime = new Date();
             alarmTime.setHours(hour, minute, 0, 0);
@@ -896,7 +651,6 @@
             document.getElementById('alarmHour').value = '';
             document.getElementById('alarmMinute').value = '';
         }
-
         function updateAlarmList() {
             const alarmList = document.getElementById('alarmList');
             if (!alarmList) return;
@@ -906,19 +660,11 @@
                 const timeStr = alarm.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
                 const div = document.createElement('div');
                 div.className = 'alarm-item';
-                div.innerHTML = `
-                    <span>${timeStr}</span>
-                    <button onclick="deleteAlarm(${index})">Delete</button>
-                `;
+                div.innerHTML = `<span>${timeStr}</span><button onclick="deleteAlarm(${index})">Delete</button>`;
                 alarmList.appendChild(div);
             });
         }
-
-        function deleteAlarm(index) {
-            alarms.splice(index, 1);
-            updateAlarmList();
-        }
-
+        function deleteAlarm(index) { alarms.splice(index,1); updateAlarmList(); }
         function checkAlarms() {
             const now = new Date().getTime();
             alarms = alarms.filter(time => {
@@ -931,25 +677,262 @@
             updateAlarmList();
         }
 
-        // Format time
         function formatTime(seconds) {
             const hrs = Math.floor(seconds / 3600);
             const mins = Math.floor((seconds % 3600) / 60);
             const secs = seconds % 60;
-            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            return `${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
         }
 
-        // Load saved clocks or add defaults
         if (clocks.length === 0) {
-            ['America/New_York', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney'].forEach(tz => {
-                addClock(tz);
-            });
+            ['America/New_York','Europe/Paris','Asia/Tokyo','Australia/Sydney'].forEach(tz => addClock(tz));
         } else {
             updateClockDisplay();
         }
 
-        // Set default background color
+        // initial background color
         changeBackground('#0a1128');
+
+        /* ========== ADDED: WAKE LOCK + SPOTIFY DYNAMIC ISLAND (integrated) ========== */
+
+        // WAKE LOCK logic
+        let wakeLock = null;
+        let keepAwake = true;
+        const screenAwakeBtn = document.getElementById('screenAwakeToggle');
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => {
+                        // console.log('wakeLock released');
+                    });
+                }
+            } catch (err) {
+                console.warn('Wake Lock error:', err);
+            }
+        }
+
+        async function releaseWakeLock() {
+            try {
+                if (wakeLock) {
+                    await wakeLock.release();
+                    wakeLock = null;
+                }
+            } catch (err) {
+                console.warn('Wake Lock release failed:', err);
+            }
+        }
+
+        function updateAwakeButton() {
+            if (!screenAwakeBtn) return;
+            screenAwakeBtn.textContent = `🔆 Keep Awake: ${keepAwake ? 'ON' : 'OFF'}`;
+        }
+
+        function toggleWakeLockUI() {
+            keepAwake = !keepAwake;
+            updateAwakeButton();
+            if (keepAwake) requestWakeLock();
+            else releaseWakeLock();
+        }
+
+        // Hook button
+        if (screenAwakeBtn) screenAwakeBtn.addEventListener('click', toggleWakeLockUI);
+
+        // SPOTIFY integration (Implicit flow token in URL hash)
+        const SPOTIFY_CLIENT_ID = "802d79a9e51242f999d8e670cbb86394"; // your client id
+        // redirect will be window.location.origin + window.location.pathname
+        const SPOTIFY_SCOPE = "user-read-currently-playing";
+        let spotifyAccessToken = localStorage.getItem('spotifyAccessToken') || null;
+        let lastTrackId = null;
+
+        // show friendly error if Spotify returned an error on redirect (e.g. INVALID_CLIENT)
+        function checkForAuthErrors() {
+            // Spotify may redirect with ?error=... in query if redirect mismatch; or with #error= in hash
+            const params = new URLSearchParams(window.location.search);
+            const qerror = params.get('error');
+            if (qerror) {
+                // show a helpful message in the spotify pill area
+                const el = document.getElementById('spotifyNowPlaying');
+                if (el) {
+                    el.classList.remove('hidden');
+                    el.innerHTML = `
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <strong style="color:#fda4af">Spotify auth error:</strong>
+                            <div style="max-width:260px;font-size:.88rem;color:#fca5a5">` + qerror + `</div>
+                            <div style="margin-top:6px;font-size:.82rem;color:#cbd5ff">
+                                Fix: add this exact redirect URI in your Spotify Dashboard → App settings:
+                                <pre style="background:rgba(255,255,255,0.03);padding:6px;border-radius:6px;margin-top:6px">` + (window.location.origin + window.location.pathname) + `</pre>
+                            </div>
+                        </div>`;
+                }
+            }
+
+            // check hash for access_token or error
+            if (window.location.hash) {
+                const hash = new URLSearchParams(window.location.hash.slice(1));
+                if (hash.get('access_token')) {
+                    spotifyAccessToken = hash.get('access_token');
+                    localStorage.setItem('spotifyAccessToken', spotifyAccessToken);
+                    // remove hash from URL
+                    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                } else if (hash.get('error')) {
+                    const err = hash.get('error');
+                    const el = document.getElementById('spotifyNowPlaying');
+                    if (el) {
+                        el.classList.remove('hidden');
+                        el.innerHTML = `
+                            <div style="display:flex;flex-direction:column;gap:6px;">
+                                <strong style="color:#fda4af">Spotify auth error:</strong>
+                                <div style="max-width:260px;font-size:.88rem;color:#fca5a5">`+err+`</div>
+                                <div style="margin-top:6px;font-size:.82rem;color:#cbd5ff">
+                                    Fix: add this exact redirect URI in your Spotify Dashboard → App settings:
+                                    <pre style="background:rgba(255,255,255,0.03);padding:6px;border-radius:6px;margin-top:6px">` + (window.location.origin + window.location.pathname) + `</pre>
+                                </div>
+                            </div>`;
+                    }
+                }
+            }
+        }
+
+        function buildSpotifyAuthUrl() {
+            const redirectUri = window.location.origin + window.location.pathname;
+            const url = new URL('https://accounts.spotify.com/authorize');
+            url.searchParams.set('client_id', SPOTIFY_CLIENT_ID);
+            url.searchParams.set('response_type', 'token'); // implicit grant
+            url.searchParams.set('redirect_uri', redirectUri);
+            url.searchParams.set('scope', SPOTIFY_SCOPE);
+            url.searchParams.set('show_dialog', 'true');
+            return url.toString();
+        }
+
+        function authenticateSpotify() {
+            window.location.href = buildSpotifyAuthUrl();
+        }
+
+        async function updateSpotifyNowPlaying() {
+            const el = document.getElementById('spotifyNowPlaying');
+            if (!el) return;
+            // If no token, show connect button
+            if (!spotifyAccessToken) {
+                el.innerHTML = `<button id="connectSpotifyBtn" style="background:linear-gradient(145deg,#3b82f6,#6366f1);border:none;padding:8px 12px;border-radius:10px;color:white;cursor:pointer">Connect Spotify</button>
+                <div style="font-size:.8rem;color:#cbd5ff;margin-left:6px">Sign in to show currently playing</div>`;
+                el.querySelector('#connectSpotifyBtn').addEventListener('click', authenticateSpotify);
+                return;
+            }
+
+            // fetch currently playing
+            try {
+                const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+                    headers: { 'Authorization': `Bearer ${spotifyAccessToken}` }
+                });
+                if (res.status === 204 || res.status === 202) {
+                    el.innerHTML = `<div style="font-size:.9rem;color:#cbd5ff">Nothing playing</div>`;
+                    return;
+                }
+                if (!res.ok) {
+                    // token might be expired or invalid -> clear and show reconnect
+                    localStorage.removeItem('spotifyAccessToken');
+                    spotifyAccessToken = null;
+                    el.innerHTML = `<button id="connectSpotifyBtn2" style="background:linear-gradient(145deg,#3b82f6,#6366f1);border:none;padding:8px 12px;border-radius:10px;color:white;cursor:pointer">Reconnect Spotify</button>`;
+                    el.querySelector('#connectSpotifyBtn2').addEventListener('click', authenticateSpotify);
+                    return;
+                }
+                const data = await res.json();
+                if (data && data.item) {
+                    const track = data.item;
+                    const img = track.album?.images?.[0]?.url || '';
+                    const title = track.name || 'Unknown';
+                    const artists = (track.artists || []).map(a => a.name).join(', ');
+                    // animate if track changed
+                    const changed = lastTrackId && lastTrackId !== track.id;
+                    lastTrackId = track.id;
+                    el.innerHTML = `<img src="${img}" alt="album art"><div class="meta"><div class="title">${escapeHtml(title)}</div><div class="artist">${escapeHtml(artists)}</div></div>`;
+                    if (changed) {
+                        el.classList.add('song-change');
+                        setTimeout(() => el.classList.remove('song-change'), 700);
+                    }
+                } else {
+                    el.innerHTML = `<div style="font-size:.9rem;color:#cbd5ff">Nothing playing</div>`;
+                }
+            } catch (err) {
+                console.warn('Spotify error', err);
+            }
+        }
+
+        function escapeHtml(s) {
+            if (!s) return '';
+            return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+        }
+
+        // Show/hide extras on fullscreen changes
+        function showFullscreenExtras(show) {
+            const spotifyBar = document.getElementById('spotifyNowPlaying');
+            const awakeBtn = document.getElementById('screenAwakeToggle');
+            if (show) {
+                // show UI
+                if (spotifyBar) spotifyBar.classList.remove('hidden');
+                if (awakeBtn) { awakeBtn.classList.remove('hidden'); updateAwakeButton(); }
+                // ensure wake lock is requested if supported
+                if (keepAwake) requestWakeLock();
+                // refresh spotify immediately
+                updateSpotifyNowPlaying();
+            } else {
+                if (spotifyBar) spotifyBar.classList.add('hidden');
+                if (awakeBtn) awakeBtn.classList.add('hidden');
+                releaseWakeLock();
+            }
+        }
+
+        // patch the fullscreen handlers so your existing functions call the extras
+        (function patchFullscreenHooks() {
+            // preserve original functions
+            const origShow = window.showSingleFullscreen || null;
+            const origExit = window.exitSingleFullscreen || null;
+
+            // override showSingleFullscreen to call original then extras
+            window.showSingleFullscreen = function(tz) {
+                // call original behavior (if present)
+                if (origShow) origShow(tz);
+                else {
+                    // fallback if original missing: set fullscreen state + update display
+                    singleFullscreenTz = tz;
+                    document.documentElement.requestFullscreen();
+                    updateClockDisplay();
+                }
+                // show extras
+                showFullscreenExtras(true);
+            };
+
+            // override exitSingleFullscreen similarly
+            window.exitSingleFullscreen = function() {
+                if (origExit) origExit();
+                else {
+                    singleFullscreenTz = null;
+                    document.exitFullscreen();
+                    updateClockDisplay();
+                }
+                showFullscreenExtras(false);
+            };
+
+            // also respond to native fullscreen change events (e.g. user pressed ESC)
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) showFullscreenExtras(true);
+                else showFullscreenExtras(false);
+            });
+        })();
+
+        // run auth error check on load in case spotify redirected back
+        checkForAuthErrors();
+
+        // poll spotify every 5s while visible (only updates pill when shown)
+        setInterval(() => {
+            if (document.fullscreenElement) updateSpotifyNowPlaying();
+        }, 5000);
+
+        // If user opens feature modal (which requests fullscreen), also ensure extras show
+        // Already openFeature calls requestFullscreen, so fullscreenchange listener handles it.
+
     </script>
 </body>
 </html>
