@@ -739,201 +739,230 @@
         // Hook button
         if (screenAwakeBtn) screenAwakeBtn.addEventListener('click', toggleWakeLockUI);
 
-// SPOTIFY integration (Implicit flow token in URL hash)
+<script>
 const SPOTIFY_CLIENT_ID = "802d79a9e51242f999d8e670cbb86394"; // your client id
-// redirect URI hardcoded to match Spotify Dashboard exactly
 const SPOTIFY_REDIRECT_URI = "https://ld-beepbeep.github.io/World-Clock/";
 const SPOTIFY_SCOPE = "user-read-currently-playing";
+
 let spotifyAccessToken = localStorage.getItem('spotifyAccessToken') || null;
+let spotifyRefreshToken = localStorage.getItem('spotifyRefreshToken') || null;
+let codeVerifier = localStorage.getItem('spotifyCodeVerifier') || null;
 let lastTrackId = null;
 
-// show friendly error if Spotify returned an error on redirect (e.g. INVALID_CLIENT)
-function checkForAuthErrors() {
-    // Spotify may redirect with ?error=... in query if redirect mismatch; or with #error= in hash
-    const params = new URLSearchParams(window.location.search);
-    const qerror = params.get('error');
-    if (qerror) {
-        // show a helpful message in the spotify pill area
-        const el = document.getElementById('spotifyNowPlaying');
-        if (el) {
-            el.classList.remove('hidden');
-            el.innerHTML = `
-                <div style="display:flex;flex-direction:column;gap:6px;">
-                    <strong style="color:#fda4af">Spotify auth error:</strong>
-                    <div style="max-width:260px;font-size:.88rem;color:#fca5a5">` + qerror + `</div>
-                    <div style="margin-top:6px;font-size:.82rem;color:#cbd5ff">
-                        Fix: add this exact redirect URI in your Spotify Dashboard → App settings:
-                        <pre style="background:rgba(255,255,255,0.03);padding:6px;border-radius:6px;margin-top:6px">` + SPOTIFY_REDIRECT_URI + `</pre>
-                    </div>
-                </div>`;
-        }
-    }
-
-    // check hash for access_token or error
-    if (window.location.hash) {
-        const hash = new URLSearchParams(window.location.hash.slice(1));
-        if (hash.get('access_token')) {
-            spotifyAccessToken = hash.get('access_token');
-            localStorage.setItem('spotifyAccessToken', spotifyAccessToken);
-            // remove hash from URL
-            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-        } else if (hash.get('error')) {
-            const err = hash.get('error');
-            const el = document.getElementById('spotifyNowPlaying');
-            if (el) {
-                el.classList.remove('hidden');
-                el.innerHTML = `
-                    <div style="display:flex;flex-direction:column;gap:6px;">
-                        <strong style="color:#fda4af">Spotify auth error:</strong>
-                        <div style="max-width:260px;font-size:.88rem;color:#fca5a5">`+err+`</div>
-                        <div style="margin-top:6px;font-size:.82rem;color:#cbd5ff">
-                            Fix: add this exact redirect URI in your Spotify Dashboard → App settings:
-                            <pre style="background:rgba(255,255,255,0.03);padding:6px;border-radius:6px;margin-top:6px">` + SPOTIFY_REDIRECT_URI + `</pre>
-                        </div>
-                    </div>`;
-            }
-        }
-    }
+// Helper to generate code verifier
+function generateCodeVerifier() {
+  const array = new Uint8Array(128);
+  window.crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function buildSpotifyAuthUrl() {
-    const url = new URL('https://accounts.spotify.com/authorize');
-    url.searchParams.set('client_id', SPOTIFY_CLIENT_ID);
-    url.searchParams.set('response_type', 'token'); // implicit grant
-    url.searchParams.set('redirect_uri', SPOTIFY_REDIRECT_URI);
-    url.searchParams.set('scope', SPOTIFY_SCOPE);
-    url.searchParams.set('show_dialog', 'true');
-    return url.toString();
+// Helper to generate code challenge from verifier
+async function generateCodeChallenge(verifier) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const digest = await window.crypto.subtle.digest('SHA-256', data);
+  const base64Digest = btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return base64Digest;
 }
 
-function authenticateSpotify() {
-    window.location.href = buildSpotifyAuthUrl();
-}
-
-async function updateSpotifyNowPlaying() {
-    const el = document.getElementById('spotifyNowPlaying');
-    if (!el) return;
-    // If no token, show connect button
-    if (!spotifyAccessToken) {
-        el.innerHTML = `<button id="connectSpotifyBtn" style="background:linear-gradient(145deg,#3b82f6,#6366f1);border:none;padding:8px 12px;border-radius:10px;color:white;cursor:pointer">Connect Spotify</button>
-        <div style="font-size:.8rem;color:#cbd5ff;margin-left:6px">Sign in to show currently playing</div>`;
-        el.querySelector('#connectSpotifyBtn').addEventListener('click', authenticateSpotify);
-        return;
-    }
-
-    // fetch currently playing
-    try {
-        const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-            headers: { 'Authorization': `Bearer ${spotifyAccessToken}` }
-        });
-        if (res.status === 204 || res.status === 202) {
-            el.innerHTML = `<div style="font-size:.9rem;color:#cbd5ff">Nothing playing</div>`;
-            return;
-        }
-        if (!res.ok) {
-            // token might be expired or invalid -> clear and show reconnect
-            localStorage.removeItem('spotifyAccessToken');
-            spotifyAccessToken = null;
-            el.innerHTML = `<button id="connectSpotifyBtn2" style="background:linear-gradient(145deg,#3b82f6,#6366f1);border:none;padding:8px 12px;border-radius:10px;color:white;cursor:pointer">Reconnect Spotify</button>`;
-            el.querySelector('#connectSpotifyBtn2').addEventListener('click', authenticateSpotify);
-            return;
-        }
-        const data = await res.json();
-        if (data && data.item) {
-            const track = data.item;
-            const img = track.album?.images?.[0]?.url || '';
-            const title = track.name || 'Unknown';
-            const artists = (track.artists || []).map(a => a.name).join(', ');
-            // animate if track changed
-            const changed = lastTrackId && lastTrackId !== track.id;
-            lastTrackId = track.id;
-            el.innerHTML = `<img src="${img}" alt="album art"><div class="meta"><div class="title">${escapeHtml(title)}</div><div class="artist">${escapeHtml(artists)}</div></div>`;
-            if (changed) {
-                el.classList.add('song-change');
-                setTimeout(() => el.classList.remove('song-change'), 700);
-            }
-        } else {
-            el.innerHTML = `<div style="font-size:.9rem;color:#cbd5ff">Nothing playing</div>`;
-        }
-    } catch (err) {
-        console.warn('Spotify error', err);
-    }
-}
-
+// Escape HTML helper
 function escapeHtml(s) {
-    if (!s) return '';
-    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  if (!s) return '';
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 }
 
-// Show/hide extras on fullscreen changes
-function showFullscreenExtras(show) {
-    const spotifyBar = document.getElementById('spotifyNowPlaying');
-    const awakeBtn = document.getElementById('screenAwakeToggle');
-    if (show) {
-        // show UI
-        if (spotifyBar) spotifyBar.classList.remove('hidden');
-        if (awakeBtn) { awakeBtn.classList.remove('hidden'); updateAwakeButton(); }
-        // ensure wake lock is requested if supported
-        if (keepAwake) requestWakeLock();
-        // refresh spotify immediately
-        updateSpotifyNowPlaying();
-    } else {
-        if (spotifyBar) spotifyBar.classList.add('hidden');
-        if (awakeBtn) awakeBtn.classList.add('hidden');
-        releaseWakeLock();
-    }
+// Show auth errors
+function showAuthError(error) {
+  const el = document.getElementById('spotifyNowPlaying');
+  if (el) {
+    el.classList.remove('hidden');
+    el.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <strong style="color:#fda4af">Spotify auth error:</strong>
+        <div style="max-width:260px;font-size:.88rem;color:#fca5a5">${escapeHtml(error)}</div>
+        <div style="margin-top:6px;font-size:.82rem;color:#cbd5ff">
+          Fix: add this exact redirect URI in your Spotify Dashboard → App settings:
+          <pre style="background:rgba(255,255,255,0.03);padding:6px;border-radius:6px;margin-top:6px">${SPOTIFY_REDIRECT_URI}</pre>
+        </div>
+      </div>`;
+  }
 }
 
-// patch the fullscreen handlers so your existing functions call the extras
-(function patchFullscreenHooks() {
-    // preserve original functions
-    const origShow = window.showSingleFullscreen || null;
-    const origExit = window.exitSingleFullscreen || null;
+// Build auth URL with PKCE
+async function buildSpotifyAuthUrl() {
+  codeVerifier = generateCodeVerifier();
+  localStorage.setItem('spotifyCodeVerifier', codeVerifier);
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-    // override showSingleFullscreen to call original then extras
-    window.showSingleFullscreen = function(tz) {
-        // call original behavior (if present)
-        if (origShow) origShow(tz);
-        else {
-            // fallback if original missing: set fullscreen state + update display
-            singleFullscreenTz = tz;
-            document.documentElement.requestFullscreen();
-            updateClockDisplay();
-        }
-        // show extras
-        showFullscreenExtras(true);
-    };
+  const url = new URL('https://accounts.spotify.com/authorize');
+  url.searchParams.set('client_id', SPOTIFY_CLIENT_ID);
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('redirect_uri', SPOTIFY_REDIRECT_URI);
+  url.searchParams.set('scope', SPOTIFY_SCOPE);
+  url.searchParams.set('code_challenge_method', 'S256');
+  url.searchParams.set('code_challenge', codeChallenge);
+  url.searchParams.set('show_dialog', 'true');
+  return url.toString();
+}
 
-    // override exitSingleFullscreen similarly
-    window.exitSingleFullscreen = function() {
-        if (origExit) origExit();
-        else {
-            singleFullscreenTz = null;
-            document.exitFullscreen();
-            updateClockDisplay();
-        }
-        showFullscreenExtras(false);
-    };
+// Redirect user to Spotify login
+async function authenticateSpotify() {
+  const authUrl = await buildSpotifyAuthUrl();
+  window.location.href = authUrl;
+}
 
-    // also respond to native fullscreen change events (e.g. user pressed ESC)
-    document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement) showFullscreenExtras(true);
-        else showFullscreenExtras(false);
+// Exchange authorization code for tokens
+async function fetchAccessToken(code) {
+  const body = new URLSearchParams();
+  body.set('client_id', SPOTIFY_CLIENT_ID);
+  body.set('grant_type', 'authorization_code');
+  body.set('code', code);
+  body.set('redirect_uri', SPOTIFY_REDIRECT_URI);
+  body.set('code_verifier', codeVerifier);
+
+  try {
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body.toString(),
     });
-})();
+    if (!res.ok) throw new Error('Failed to fetch access token');
+    const data = await res.json();
+    spotifyAccessToken = data.access_token;
+    spotifyRefreshToken = data.refresh_token;
+    localStorage.setItem('spotifyAccessToken', spotifyAccessToken);
+    localStorage.setItem('spotifyRefreshToken', spotifyRefreshToken);
+    localStorage.removeItem('spotifyCodeVerifier');
+    window.history.replaceState({}, document.title, window.location.pathname); // clean URL
+  } catch (e) {
+    showAuthError(e.message);
+  }
+}
 
-// run auth error check on load in case spotify redirected back
-checkForAuthErrors();
+// Refresh access token with refresh token
+async function refreshAccessToken() {
+  if (!spotifyRefreshToken) {
+    spotifyAccessToken = null;
+    localStorage.removeItem('spotifyAccessToken');
+    return;
+  }
 
-// poll spotify every 5s while visible (only updates pill when shown)
-setInterval(() => {
+  const body = new URLSearchParams();
+  body.set('client_id', SPOTIFY_CLIENT_ID);
+  body.set('grant_type', 'refresh_token');
+  body.set('refresh_token', spotifyRefreshToken);
+
+  try {
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body.toString(),
+    });
+    if (!res.ok) throw new Error('Failed to refresh access token');
+    const data = await res.json();
+    spotifyAccessToken = data.access_token;
+    localStorage.setItem('spotifyAccessToken', spotifyAccessToken);
+  } catch (e) {
+    spotifyAccessToken = null;
+    spotifyRefreshToken = null;
+    localStorage.removeItem('spotifyAccessToken');
+    localStorage.removeItem('spotifyRefreshToken');
+    showAuthError(e.message);
+  }
+}
+
+// Parse URL for authorization code after redirect
+async function checkForAuthorizationCode() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const error = params.get('error');
+
+  if (error) {
+    showAuthError(error);
+  }
+
+  if (code) {
+    await fetchAccessToken(code);
+  }
+}
+
+// Show the "Connect Spotify" button or the current playing track
+async function updateSpotifyNowPlaying() {
+  const el = document.getElementById('spotifyNowPlaying');
+  if (!el) return;
+
+  if (!spotifyAccessToken) {
+    el.innerHTML = `
+      <button id="connectSpotifyBtn" style="background:linear-gradient(145deg,#3b82f6,#6366f1);border:none;padding:8px 12px;border-radius:10px;color:white;cursor:pointer">Connect Spotify</button>
+      <div style="font-size:.8rem;color:#cbd5ff;margin-left:6px">Sign in to show currently playing</div>
+    `;
+    el.querySelector('#connectSpotifyBtn').addEventListener('click', authenticateSpotify);
+    return;
+  }
+
+  try {
+    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+      headers: { 'Authorization': `Bearer ${spotifyAccessToken}` }
+    });
+
+    if (res.status === 204 || res.status === 202) {
+      el.innerHTML = `<div style="font-size:.9rem;color:#cbd5ff">Nothing playing</div>`;
+      return;
+    }
+
+    if (!res.ok) {
+      // Token might be expired -> refresh
+      await refreshAccessToken();
+      if (!spotifyAccessToken) {
+        el.innerHTML = `
+          <button id="connectSpotifyBtn2" style="background:linear-gradient(145deg,#3b82f6,#6366f1);border:none;padding:8px 12px;border-radius:10px;color:white;cursor:pointer">Reconnect Spotify</button>
+        `;
+        el.querySelector('#connectSpotifyBtn2').addEventListener('click', authenticateSpotify);
+        return;
+      }
+    }
+
+    const data = await res.json();
+    if (data && data.item) {
+      const track = data.item;
+      const img = track.album?.images?.[0]?.url || '';
+      const title = track.name || 'Unknown';
+      const artists = (track.artists || []).map(a => a.name).join(', ');
+      const changed = lastTrackId && lastTrackId !== track.id;
+      lastTrackId = track.id;
+
+      el.innerHTML = `
+        <img src="${img}" alt="album art" style="width:50px;height:50px;border-radius:5px;vertical-align:middle;margin-right:8px;">
+        <div style="display:inline-block;vertical-align:middle;">
+          <div class="title">${escapeHtml(title)}</div>
+          <div class="artist" style="font-size:0.85em;color:#cbd5ff;">${escapeHtml(artists)}</div>
+        </div>
+      `;
+
+      if (changed) {
+        el.classList.add('song-change');
+        setTimeout(() => el.classList.remove('song-change'), 700);
+      }
+    } else {
+      el.innerHTML = `<div style="font-size:.9rem;color:#cbd5ff">Nothing playing</div>`;
+    }
+  } catch (err) {
+    console.warn('Spotify error', err);
+    localStorage.removeItem('spotifyAccessToken');
+    spotifyAccessToken = null;
+  }
+}
+
+// Initialization
+(async () => {
+  await checkForAuthorizationCode();
+  updateSpotifyNowPlaying();
+  setInterval(() => {
     if (document.fullscreenElement) updateSpotifyNowPlaying();
-}, 5000);
+  }, 5000);
+})();
+</script>
 
-// If user opens feature modal (which requests fullscreen), also ensure extras show
-// Already openFeature calls requestFullscreen, so fullscreenchange listener handles it.
-
-
-    </script>
 </body>
 </html>
