@@ -952,6 +952,10 @@
 
         // Set default background color
         changeBackground('#0a1128');
+        if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log('Service worker registered'));
+}
     </script>
 </body>
 </html>
